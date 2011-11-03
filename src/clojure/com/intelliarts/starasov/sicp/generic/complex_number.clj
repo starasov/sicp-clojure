@@ -1,94 +1,91 @@
 (ns clojure.com.intelliarts.starasov.sicp.generic.complex-number
-  (:use clojure.com.intelliarts.starasov.sicp.generic.common
-        clojure.com.intelliarts.starasov.sicp.generic.arithmetic
-        [clojure.com.intelliarts.starasov.sicp.generic.complex-polar :only (install-polar-package)]
-        [clojure.com.intelliarts.starasov.sicp.generic.complex-rectangular :only (install-rectangular-package)])
-  (:require [clojure.contrib.generic.math-functions :as mf]))
+  (:use clojure.com.intelliarts.starasov.sicp.generic.common)
+  (:require [clojure.contrib.generic.math-functions :as mf]
+            [clojure.com.intelliarts.starasov.sicp.generic.real-number :as rn]
+            [clojure.com.intelliarts.starasov.sicp.generic.complex-polar :as cp]
+            [clojure.com.intelliarts.starasov.sicp.generic.complex-rectangular :as cr]))
 
-(defn install-complex-package []
+(defn angle [z]
+  (apply-generic :angle z))
 
-  (install-rectangular-package)
-  (install-polar-package)
+(defn real-part [z]
+  (apply-generic :real-part z))
 
-  (defn angle [z]
-    (apply-generic :angle z))
+(defn imag-part [z]
+  (apply-generic :imag-part z))
 
-  (defn real-part [z]
-    (apply-generic :real-part z))
+(defn magnitude [z]
+  (apply-generic :magnitude z))
 
-  (defn imag-part [z]
-    (apply-generic :imag-part z))
+(defn make-from-real-imag [x y]
+  ((lookup :make-from-real-imag :rectangular) x y))
 
-  (defn magnitude [z]
-    (apply-generic :magnitude z))
+(defn make-from-mag-ang [r a]
+  ((lookup :make-from-mag-ang :polar) r a))
 
-  (defn make-from-real-imag [x y]
-    ((lookup :make-from-real-imag :rectangular) x y))
+(defn -add [z1 z2]
+  (make-from-real-imag (+ (real-part z1) (real-part z2))
+    (+ (imag-part z1) (imag-part z2))))
 
-  (defn make-from-mag-ang [r a]
-    ((lookup :make-from-mag-ang :polar) r a))
+(defn -sub [z1 z2]
+  (make-from-real-imag (- (real-part z1) (real-part z2))
+    (- (imag-part z1) (imag-part z2))))
 
-  (defn -add [z1 z2]
-    (make-from-real-imag (+ (real-part z1) (real-part z2))
-      (+ (imag-part z1) (imag-part z2))))
+(defn -mul [z1 z2]
+  (make-from-mag-ang (* (magnitude z1) (magnitude z2))
+    (+ (angle z1) (angle z2))))
 
-  (defn -sub [z1 z2]
-    (make-from-real-imag (- (real-part z1) (real-part z2))
-      (- (imag-part z1) (imag-part z2))))
+(defn -div [z1 z2]
+  (make-from-mag-ang (/ (magnitude z1) (magnitude z2))
+    (- (angle z1) (angle z2))))
 
-  (defn -mul [z1 z2]
-    (make-from-mag-ang (* (magnitude z1) (magnitude z2))
-      (+ (angle z1) (angle z2))))
+(defn -eq? [z1 z2]
+  (and (= (real-part z1) (real-part z2))
+    (= (imag-part z1) (imag-part z2))))
 
-  (defn -div [z1 z2]
-    (make-from-mag-ang (/ (magnitude z1) (magnitude z2))
-      (- (angle z1) (angle z2))))
+(defn -is-zero? [x]
+  (and (= (real-part x) 0)
+    (= (imag-part x) 0)))
 
-  (defn -eq? [z1 z2]
-    (and (= (real-part z1) (real-part z2))
-      (= (imag-part z1) (imag-part z2))))
+(defn tag [z]
+  (attach-tag :complex z))
 
-  (defn -is-zero? [x]
-    (and (= (real-part x) 0)
-      (= (imag-part x) 0)))
+(register :add [:complex :complex]
+  (fn [z1 z2] (tag (-add z1 z2))))
 
-  (defn tag [z]
-    (attach-tag :complex z))
+(register :sub [:complex :complex]
+  (fn [z1 z2] (tag (-sub z1 z2))))
 
-  (register :add [:complex :complex]
-    (fn [z1 z2] (tag (-add z1 z2))))
+(register :mul [:complex :complex]
+  (fn [z1 z2] (tag (-mul z1 z2))))
 
-  (register :sub [:complex :complex]
-    (fn [z1 z2] (tag (-sub z1 z2))))
+(register :div [:complex :complex]
+  (fn [z1 z2] (tag (-div z1 z2))))
 
-  (register :mul [:complex :complex]
-    (fn [z1 z2] (tag (-mul z1 z2))))
+(register :angle [:complex] angle)
+(register :real-part [:complex] real-part)
+(register :imag-part [:complex] imag-part)
+(register :magnitude [:complex] magnitude)
+(register :eq? [:complex :complex] -eq?)
+(register :is-zero? [:complex] -is-zero?)
 
-  (register :div [:complex :complex]
-    (fn [z1 z2] (tag (-div z1 z2))))
+(register :make-from-real-imag :complex
+  (fn [x y] (tag (make-from-real-imag x y))))
 
-  (register :angle [:complex] angle)
-  (register :real-part [:complex] real-part)
-  (register :imag-part [:complex] imag-part)
-  (register :magnitude [:complex] magnitude)
-  (register :eq? [:complex :complex] -eq?)
-  (register :is-zero? [:complex] -is-zero?)
+(register :make-from-mag-ang :complex
+  (fn [r a] (tag (make-from-mag-ang r a))))
 
-  (register :make-from-real-imag :complex
-    (fn [x y] (tag (make-from-real-imag x y))))
+(register :make-from-mag-ang :complex
+  (fn [r a] (tag (make-from-mag-ang r a))))
 
-  (register :make-from-mag-ang :complex
-    (fn [r a] (tag (make-from-mag-ang r a))))
+(register :raise [:real-number]
+  (fn [x] (tag (make-from-real-imag (rn/real-value x) 0.0))))
 
-  (register :make-from-mag-ang :complex
-    (fn [r a] (tag (make-from-mag-ang r a))))
-
-  :done)
+(register :raise [:scheme-number]
+  (fn [x] (tag (make-from-real-imag x 0))))
 
 (defn make-complex-from-real-imag [x y]
   ((lookup :make-from-real-imag :complex) x y))
 
 (defn make-complex-from-mag-ang [r a]
   ((lookup :make-from-mag-ang :complex) r a))
-
-(install-complex-package)
