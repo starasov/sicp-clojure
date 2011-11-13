@@ -7,6 +7,7 @@
 (defn div [x y] (apply-generic :div x y))
 (defn exp [x y] (apply-generic :exp x y))
 (defn raise [x] (apply-generic :raise x))
+(defn negate [x] (apply-generic :negate x))
 
 "Exercise 2.79.
 Define a generic equality predicate equ? that tests the equality of two numbers, and install

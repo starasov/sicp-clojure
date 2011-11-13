@@ -7,3 +7,4 @@
 (register :div [:scheme-number :scheme-number] /)
 (register :eq? [:scheme-number :scheme-number] =)
 (register :is-zero? [:scheme-number] zero?)
+(register :negate [:scheme-number] -)
