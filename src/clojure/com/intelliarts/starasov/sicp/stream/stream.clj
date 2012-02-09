@@ -20,7 +20,6 @@
 
 (defn stream-map [proc stream]
   (do
-;    (println) (println "stream-map car" (stream-car stream) "second?" (proc (stream-car stream)))
     (if-not (empty-stream? stream)
     (stream-cons (proc (stream-car stream)) (stream-map proc (stream-cdr stream)))
     empty-stream)))
@@ -143,8 +142,3 @@ roots up to a given tolerance by:
 
 (defn ln-summands [n]
   (stream-cons (/ 1.0 n) (stream-map - (ln-summands (+ n 1)))))
-
-;(println (pi-summands 1))
-(println (partial-sums (ln-summands 1)))
-
-;(println (stream-limit (sqrt-stream 2) 1e-10))
